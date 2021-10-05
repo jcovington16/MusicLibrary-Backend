@@ -4,17 +4,19 @@ const cors = require('cors');
 const { validateSongs } = require('./middleware/music-validation');
 
 const app = express();
+const PORT = process.env.PORT || 3001
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.listen(3000, () => {
-    console.log("Server started. Listening on port 3000");
+app.listen(PORT, () => {
+    console.log(`Server started. Listening on port ${PORT}`);
 });
 
 app.get('/api/music', (req, res) => {
     const music = repoContext.songs.findAllSongs()
-    return res.send(music);
+    return res.json(music);
 });
 
 app.get('/api/music/:id', (req, res) => {
@@ -23,13 +25,13 @@ app.get('/api/music/:id', (req, res) => {
     return res.send(musicId);
 })
 
-app.post("/api/music", (req, res) => {
+app.post("/api/music", [validateSongs], (req, res) => {
   const newSong = req.body;
   const addedSongs = repoContext.songs.createSong(newSong);
   return res.send(addedSongs);
 });
 
-app.put("/api/music/:id", (req, res) => {
+app.put("/api/music/:id", [validateSongs], (req, res) => {
   const id = req.params.id;
   const songTracksToUpdate = req.body;
   const updatedSonglist = repoContext.songs.updateSong(songTracksToUpdate);
